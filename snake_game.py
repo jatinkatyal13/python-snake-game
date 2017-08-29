@@ -23,32 +23,52 @@ class _Getch:
 		return ch
 getch = _Getch()
 
-def food():
-	import random
-	c = coord(random.randint)
-
 snake = [coord(4, 5), coord(4, 6), coord(4, 7)]
+height = 20
+width = 40
+points = 0
+
+def set_food():
+	global food
+	import random
+	c = coord(random.randint(3, width-2), random.randint(3, height-2))
+	while any(c.x == temp.x and c.y == temp.y for temp in snake):
+		c = coord(random.randint(3, width-2), random.randint(3, height-2))
+	food = c
+
+def draw():
+	for i in range(0, width+2):
+		print('*', end='')
+	print('')
+	for j in range(0, height):
+		print('*', end='')
+		for i in range(0, width): print(' ', end='')
+		print('*', end='')
+		print('')
+	for i in range(0, width+2):
+		print('*', end='')	
+
 import os
 os.system("clear")
 
-height = 20
-width = 40
-
-for i in range(0, width+2):
-	print('*', end='')
-print('')
-for j in range(0, height):
-	print('*', end='')
-	for i in range(0, width): print(' ', end='')
-	print('*', end='')
-	print('')
-for i in range(0, width+2):
-	print('*', end='')
+draw()
+set_food()
 while True:
+	temp = coord(snake[0].x, snake[0].y)
+
+	if temp.x == food.x and temp.y == food.y:
+		set_food()
+		points += 1
+		snake.append(snake[-1])
+
 	for s in snake:
 		gotoxy(s.x, s.y)
 		print("@")
-	temp = coord(snake[0].x, snake[0].y)
+	gotoxy(food.x, food.y)
+	print("a")
+	gotoxy(60,10)
+	print("Points: %d" % (points))
+
 	ch = getch()	
 	if ch == 'a':
 		if not (temp.x < 3 or (snake[1].y == temp.y and temp.x > snake[1].x)):
