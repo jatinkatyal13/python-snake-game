@@ -27,6 +27,8 @@ snake = [coord(4, 5), coord(4, 6), coord(4, 7)]
 height = 20
 width = 40
 points = 0
+ch = 'd'
+food = coord(10,10)
 
 def set_food():
 	global food
@@ -46,16 +48,18 @@ def draw():
 		print('*', end='')
 		print('')
 	for i in range(0, width+2):
-		print('*', end='')	
+		print('*', end='')
 
-import os
-os.system("clear")
+import time
 
-draw()
-set_food()
-while True:
+def move():
+	global snake
+	global ch
+	global points
+	global food
+	global height
+	global width
 	temp = coord(snake[0].x, snake[0].y)
-
 	if temp.x == food.x and temp.y == food.y:
 		set_food()
 		points += 1
@@ -68,8 +72,6 @@ while True:
 	print("a")
 	gotoxy(60,10)
 	print("Points: %d" % (points))
-
-	ch = getch()	
 	if ch == 'a':
 		if not (temp.x < 3 or (snake[1].y == temp.y and temp.x > snake[1].x)):
 			temp.x -= 1
@@ -83,9 +85,48 @@ while True:
 		if not (temp.y > height or (snake[1].x == temp.x and snake[1].y > temp.y)):
 			temp.y += 1
 	elif ch == 'q':
-		break
+		os._exit(0)
 	if not (temp.x == snake[0].x and temp.y == snake[0].y):
 		snake = [temp] + snake
 		gotoxy(snake[-1].x, snake[-1].y)
 		print(' ')
 		snake.pop()
+	time.sleep(0.2)
+
+import threading
+c = threading.Condition()
+
+class inp(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		global ch
+		while True:
+			ch = getch()
+			
+
+class main(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		while True:
+			move()
+
+if __name__ == '__main__':
+	import os
+	os.system("clear")
+	os.system("setterm -cursor off")
+
+	draw()
+	set_food()
+	
+	i = inp()
+	m = main()
+
+	i.start()
+	m.start()
+
+	i.join()
+	m.join()
