@@ -13,6 +13,8 @@ class _Getch:
 		import tty, sys
 	def __call__(self):
 		import sys, tty, termios
+		global fd
+		global old_settings
 		fd = sys.stdin.fileno()
 		old_settings = termios.tcgetattr(fd)
 		try:
@@ -21,6 +23,27 @@ class _Getch:
 		finally:
 			termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 		return ch
+
+def end_game():
+	global fd
+	global old_settings
+	global points
+	global i
+	global m
+	import termios
+	termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+	import os
+	os.system("clear")
+	gotoxy(0, 0)
+	print("Game Ends ! Final Score is : %d" % (points))
+
+	i.stop()
+	m.stop()
+	import sys
+	sys.exit(0)
+
+
 getch = _Getch()
 
 snake = [coord(4, 5), coord(4, 6), coord(4, 7)]
@@ -85,7 +108,11 @@ def move():
 		if not (temp.y > height or (snake[1].x == temp.x and snake[1].y > temp.y)):
 			temp.y += 1
 	elif ch == 'q':
-		os._exit(0)
+		end_game()
+		return 
+	if any(temp.x == x.x and temp.y == x.y for x in snake):
+		end_game()
+		return
 	if not (temp.x == snake[0].x and temp.y == snake[0].y):
 		snake = [temp] + snake
 		gotoxy(snake[-1].x, snake[-1].y)
@@ -99,28 +126,45 @@ c = threading.Condition()
 class inp(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
+		self.running = True
 
 	def run(self):
 		global ch
-		while True:
-			ch = getch()
+		while True and self.running:
+			temp = getch()
+			if temp in ['a', 'd'] and ch in ['a', 'd']:
+				continue
+			elif temp in ['s', 'w'] and ch in ['s', 'w']:
+				continue
+			ch = temp
+
+	def stop(self):
+		self.running = False
 			
 
 class main(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
+		self.running = True
 
 	def run(self):
-		while True:
+		while True and self.running:
 			move()
+
+	def stop(self):
+		self.running = False
 
 if __name__ == '__main__':
 	import os
 	os.system("clear")
-	os.system("setterm -cursor off")
+	# import Console
+	# Console.getconsole().cursor(0)
 
 	draw()
 	set_food()
+
+	global i
+	global m
 	
 	i = inp()
 	m = main()
