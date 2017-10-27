@@ -118,7 +118,7 @@ def move():
 		gotoxy(snake[-1].x, snake[-1].y)
 		print(' ')
 		snake.pop()
-	time.sleep(0.2)
+	time.sleep(0.1)
 
 import threading
 c = threading.Condition()
@@ -132,9 +132,9 @@ class inp(threading.Thread):
 		global ch
 		while True and self.running:
 			temp = getch()
-			if temp in ['a', 'd'] and ch in ['a', 'd']:
+			if temp in ['s', 'w'] and ch in ['s', 'w']:
 				continue
-			elif temp in ['s', 'w'] and ch in ['s', 'w']:
+			elif temp in ['a', 'd'] and ch in ['a', 'd']:
 				continue
 			ch = temp
 
@@ -157,8 +157,6 @@ class main(threading.Thread):
 if __name__ == '__main__':
 	import os
 	os.system("clear")
-	# import Console
-	# Console.getconsole().cursor(0)
 
 	draw()
 	set_food()
